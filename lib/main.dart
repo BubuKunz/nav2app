@@ -45,6 +45,9 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
+  TextEditingController _searchQueryController = TextEditingController();
+  bool _isSearching = false;
+  String searchQuery = "Search query";
 
   void _incrementCounter() {
     setState(() {
@@ -54,6 +57,87 @@ class _MyHomePageState extends State<MyHomePage> {
       // _counter without calling setState(), then the build method would not be
       // called again, and so nothing would appear to happen.
       _counter++;
+    });
+  }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchQueryController,
+      autofocus: true,
+      decoration: InputDecoration(
+        hintText: "Search Data...",
+        border: InputBorder.none,
+        hintStyle: TextStyle(color: Colors.white30),
+      ),
+      style: TextStyle(color: Colors.white, fontSize: 16.0),
+      onChanged: (query) => updateSearchQuery,
+    );
+  }
+
+  Widget _buildTitle() {
+    return Text(widget.title);
+  }
+
+  List<Widget> _buildActions() {
+    IconButton searchIcon;
+    if (_isSearching)
+      searchIcon = IconButton(
+        icon: const Icon(Icons.clear),
+        onPressed: () {
+          if (_searchQueryController == null ||
+              _searchQueryController.text.isEmpty) {
+            Navigator.pop(context);
+            return;
+          }
+          _clearSearchQuery();
+        },
+      );
+    else
+      searchIcon = IconButton(
+        icon: const Icon(Icons.search),
+        onPressed: _startSearch,
+      );
+
+    var widgets = List<Widget>();
+    if (!_isSearching) {
+      widgets.add(
+          IconButton(icon: const Icon(Icons.person_outline), onPressed: () {}));
+      widgets.add(IconButton(
+        icon: const Icon(Icons.filter_list),
+        onPressed: () {},
+      ));
+    }
+    widgets.add(searchIcon);
+    return widgets;
+  }
+
+  void _startSearch() {
+    ModalRoute.of(context)
+        .addLocalHistoryEntry(LocalHistoryEntry(onRemove: _stopSearching));
+
+    setState(() {
+      _isSearching = true;
+    });
+  }
+
+  void updateSearchQuery(String newQuery) {
+    setState(() {
+      searchQuery = newQuery;
+    });
+  }
+
+  void _stopSearching() {
+    _clearSearchQuery();
+
+    setState(() {
+      _isSearching = false;
+    });
+  }
+
+  void _clearSearchQuery() {
+    setState(() {
+      _searchQueryController.clear();
+      updateSearchQuery("");
     });
   }
 
@@ -67,9 +151,9 @@ class _MyHomePageState extends State<MyHomePage> {
     // than having to individually change instances of widgets.
     return Scaffold(
       appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        leading: _isSearching ? const BackButton() : Container(),
+        title: _isSearching ? _buildSearchField() : _buildTitle(),
+        actions: _buildActions(),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
