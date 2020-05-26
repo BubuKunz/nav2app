@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(MyApp());
 
+bool get isInDebugMode {
+  bool inDebugMode = false;
+  assert(inDebugMode = true);
+  return inDebugMode;
+}
+
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
